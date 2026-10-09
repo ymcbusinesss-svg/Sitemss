@@ -366,16 +366,20 @@
         <button id="closeModalBtn" class="text-slate-400 hover:text-white p-1 rounded-lg">✕</button>
       </div>
 
-      <!-- Video Player Preview -->
-      <div id="videoPreviewWrapper" class="w-44 aspect-[9/16] bg-black rounded-2xl overflow-hidden border-2 border-yellow-400 shadow-xl relative mb-3">
-        <video id="renderedVideo" controls playsinline loop class="w-full h-full object-cover"></video>
-        <div id="videoGeneratingOverlay" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center p-3 text-center">
-          <div class="w-10 h-10 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin mb-3"></div>
-          <p class="text-yellow-400 font-bold text-xs uppercase tracking-wider" id="generationStatus">Ses ve Video Eşitleniyor...</p>
-          <div class="w-28 bg-slate-800 h-2 rounded-full overflow-hidden mt-2">
+      <!-- Video / Live Canvas Container: Görünür alanda işlenerek görüntü kaybı engellenir -->
+      <div id="videoPreviewWrapper" class="w-44 aspect-[9/16] bg-black rounded-2xl overflow-hidden border-2 border-yellow-400 shadow-xl relative mb-3 flex items-center justify-center">
+        <!-- Canlı render esnasında ekranda aktif olan canvas -->
+        <canvas id="exportCanvas" class="w-full h-full object-cover"></canvas>
+        <!-- Kayıt bittiğinde oynatılacak video -->
+        <video id="renderedVideo" controls playsinline loop class="w-full h-full object-cover hidden"></video>
+
+        <!-- Canlı İlerleme Bilgisi -->
+        <div id="videoGeneratingOverlay" class="absolute bottom-2 left-2 right-2 bg-slate-950/85 backdrop-blur-sm rounded-xl p-2 flex flex-col items-center text-center border border-yellow-500/30">
+          <p class="text-yellow-400 font-bold text-[11px] uppercase tracking-wider" id="generationStatus">Görüntü ve Ses İşleniyor...</p>
+          <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mt-1.5">
             <div id="generationProgress" class="bg-yellow-400 h-full w-0 transition-all duration-100"></div>
           </div>
-          <span id="timeProgressLabel" class="text-[10px] text-slate-400 mt-1">0.0s / 6.0s</span>
+          <span id="timeProgressLabel" class="text-[10px] text-slate-300 mt-1">0.0s / 6.0s</span>
         </div>
       </div>
 
@@ -398,11 +402,6 @@
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- Offscreen Active Canvas for Rendering (positioned offscreen to ensure WebKit stays active) -->
-  <div style="position: absolute; left: -9999px; top: -9999px; width: 10px; height: 10px; overflow: hidden; pointer-events: none;">
-    <canvas id="exportCanvas"></canvas>
   </div>
 
   <!-- Application Logic & Synchronized Engine -->
@@ -452,6 +451,7 @@
     const videoModal = document.getElementById("videoModal");
     const closeModalBtn = document.getElementById("closeModalBtn");
     const renderedVideo = document.getElementById("renderedVideo");
+    const exportCanvas = document.getElementById("exportCanvas");
     const shareGalleryBtn = document.getElementById("shareGalleryBtn");
     const downloadFallbackLink = document.getElementById("downloadFallbackLink");
     const videoGeneratingOverlay = document.getElementById("videoGeneratingOverlay");
@@ -1000,60 +1000,84 @@
     }
 
     // --- Rock-Solid Frame-Locked Video Recording Engine ---
+    function getOptimalVideoCodec() {
+      // Prioritize MP4 / H.264 for mobile galleries (iOS Photos & Android Gallery)
+      const codecs = [
+        { mime: "video/mp4;codecs=avc1.42E01E,mp4a.40.2", ext: "mp4" },
+        { mime: "video/mp4;codecs=avc1", ext: "mp4" },
+        { mime: "video/mp4", ext: "mp4" },
+        { mime: "video/webm;codecs=h264,opus", ext: "webm" },
+        { mime: "video/webm;codecs=vp9,opus", ext: "webm" },
+        { mime: "video/webm;codecs=vp8,opus", ext: "webm" },
+        { mime: "video/webm", ext: "webm" }
+      ];
+
+      for (const item of codecs) {
+        if (typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(item.mime)) {
+          return item;
+        }
+      }
+      return { mime: "video/webm", ext: "webm" };
+    }
+
     async function startVideoExport() {
       const actx = getAudioContext();
+
+      // UI Durumunu Hazırla: Canvas'ı göster, önceki videoyu gizle
+      exportCanvas.classList.remove("hidden");
+      renderedVideo.classList.add("hidden");
+      renderedVideo.pause();
+      renderedVideo.src = "";
 
       videoModal.classList.add("modal-active");
       videoGeneratingOverlay.classList.remove("hidden");
       shareGalleryBtn.classList.add("pointer-events-none", "opacity-50");
       downloadFallbackLink.classList.add("pointer-events-none", "opacity-40");
       generationProgress.style.width = "0%";
-      generationStatus.textContent = "Fotoğraflar Yükleniyor...";
+      generationStatus.textContent = "Fotoğraflar Hazırlanıyor...";
       timeProgressLabel.textContent = "0.0s / 6.0s";
 
       const quality = parseInt(videoQualitySelect.value, 10) || 720;
       const W = quality;
       const H = Math.round((quality * 16) / 9);
 
-      const canvas = document.getElementById("exportCanvas");
-      canvas.width = W;
-      canvas.height = H;
-      const ctx = canvas.getContext("2d", { alpha: false });
+      exportCanvas.width = W;
+      exportCanvas.height = H;
+      const ctx = exportCanvas.getContext("2d", { alpha: false, desynchronized: true });
 
       // Preload images
       const imgObjA = await loadImage(state.imageA);
       const imgObjB = await loadImage(state.imageB);
 
-      generationStatus.textContent = "Ses ve Video Senkronize Ediliyor...";
+      // İlk kareyi hemen çiz (Capture stream'in boş veya siyah başlamasını engeller)
+      drawVideoFrame(ctx, "intro", imgObjA, imgObjB, W, H);
+
+      generationStatus.textContent = "Görüntü ve Ses İşleniyor...";
 
       // Setup Web Audio MediaStreamDestination
       const audioDest = actx.createMediaStreamDestination();
-      const videoStream = canvas.captureStream(30);
+      // Ekranda canlı olan canvas'tan akış al
+      const videoStream = exportCanvas.captureStream(30);
 
-      const combinedTracks = [
-        ...videoStream.getVideoTracks(),
-        ...audioDest.stream.getAudioTracks()
-      ];
-      const combinedStream = new MediaStream(combinedTracks);
+      const videoTrack = videoStream.getVideoTracks()[0];
+      const audioTrack = audioDest.stream.getAudioTracks()[0];
 
-      // Select supported codec
-      let mimeType = "video/webm;codecs=vp9";
-      let extension = "webm";
-      if (MediaRecorder.isTypeSupported("video/mp4;codecs=avc1")) {
-        mimeType = "video/mp4;codecs=avc1";
-        extension = "mp4";
-      } else if (MediaRecorder.isTypeSupported("video/mp4")) {
-        mimeType = "video/mp4";
-        extension = "mp4";
-      } else if (MediaRecorder.isTypeSupported("video/webm")) {
-        mimeType = "video/webm";
-        extension = "webm";
+      const combinedStream = new MediaStream();
+      if (videoTrack) combinedStream.addTrack(videoTrack);
+      if (audioTrack) combinedStream.addTrack(audioTrack);
+
+      const chosenCodec = getOptimalVideoCodec();
+
+      let recorder;
+      try {
+        recorder = new MediaRecorder(combinedStream, {
+          mimeType: chosenCodec.mime,
+          videoBitsPerSecond: quality === 1080 ? 6000000 : 3500000
+        });
+      } catch (e) {
+        // Fallback to default
+        recorder = new MediaRecorder(combinedStream);
       }
-
-      const recorder = new MediaRecorder(combinedStream, {
-        mimeType: mimeType,
-        videoBitsPerSecond: quality === 1080 ? 7000000 : 4000000
-      });
 
       const chunks = [];
       recorder.ondataavailable = (e) => {
@@ -1061,14 +1085,18 @@
       };
 
       recorder.onstop = () => {
-        currentVideoBlob = new Blob(chunks, { type: mimeType });
+        currentVideoBlob = new Blob(chunks, { type: recorder.mimeType || chosenCodec.mime });
         const videoUrl = URL.createObjectURL(currentVideoBlob);
         
+        // Canvas'ı gizle ve render edilen videoyu göster
+        exportCanvas.classList.add("hidden");
+        renderedVideo.classList.remove("hidden");
         renderedVideo.src = videoUrl;
-        renderedVideo.play();
+        renderedVideo.load();
+        renderedVideo.play().catch(() => {});
 
-        const fileName = `WhichOneIsReal_${Date.now()}.${extension}`;
-        currentVideoFile = new File([currentVideoBlob], fileName, { type: mimeType });
+        const fileName = `WhichOneIsReal_${Date.now()}.${chosenCodec.ext}`;
+        currentVideoFile = new File([currentVideoBlob], fileName, { type: currentVideoBlob.type });
 
         // Update download links
         downloadFallbackLink.href = videoUrl;
@@ -1079,23 +1107,16 @@
         videoGeneratingOverlay.classList.add("hidden");
       };
 
-      // Exact Schedule:
-      // Total Duration: 6.00s
-      // t0 + 0.00s : Intro
-      // t0 + 1.20s : Circle 3 + Tick 1
-      // t0 + 2.20s : Circle 2 + Tick 2
-      // t0 + 3.20s : Circle 1 + Tick 3
-      // t0 + 4.20s : Reveal Answer + Tada Win Chords
-      // t0 + 6.00s : Finish
+      // 6 Saniyelik Kesin Zamanlama Çizelgesi
       const totalDuration = 6.0;
-      const t0 = actx.currentTime + 0.15; // 150ms buffer to start cleanly
+      const t0 = actx.currentTime + 0.1; // 100ms güvenli başlangıç payı
 
-      // Schedule Audio precisely to the audio clock
+      // Ses efektlerini Web Audio saatiyle milisaniyesi milisaniyesine zamanla
       scheduleTone(actx, audioDest, t0 + 1.2, 880, 0.12, "sine", 0.45);
       scheduleTone(actx, audioDest, t0 + 2.2, 880, 0.12, "sine", 0.45);
       scheduleTone(actx, audioDest, t0 + 3.2, 880, 0.12, "sine", 0.45);
 
-      // Fanfare chords
+      // Doğru cevap kutlama akorları
       [
         { f: 523.25, d: 0.15, o: 0 },
         { f: 659.25, d: 0.15, o: 0.1 },
@@ -1105,10 +1126,9 @@
         scheduleTone(actx, audioDest, t0 + 4.2 + chord.o, chord.f, chord.d, "triangle", 0.35);
       });
 
-      // Start recording
+      // Kaydı başlat
       recorder.start(100);
 
-      // Render loop locked 1:1 to audio clock
       let animationFrameId = null;
 
       function renderFrame() {
@@ -1119,7 +1139,7 @@
         generationProgress.style.width = `${progress}%`;
         timeProgressLabel.textContent = `${elapsed.toFixed(1)}s / ${totalDuration.toFixed(1)}s`;
 
-        // Exact Phase locked to audio clock timestamps
+        // Ses saatine %100 kilitli aşama hesaplaması
         let currentPhase = "intro";
         if (elapsed >= 1.2 && elapsed < 2.2) {
           currentPhase = "3";
@@ -1131,7 +1151,13 @@
           currentPhase = "reveal";
         }
 
+        // Kareyi doğrudan ekranda görünen canvas'a çiz
         drawVideoFrame(ctx, currentPhase, imgObjA, imgObjB, W, H);
+
+        // Tarayıcıya kareyi captureStream için hemen işlemesi gerektiğini bildir
+        if (videoTrack && typeof videoTrack.requestFrame === "function") {
+          videoTrack.requestFrame();
+        }
 
         if (elapsed < totalDuration) {
           animationFrameId = requestAnimationFrame(renderFrame);
@@ -1141,7 +1167,7 @@
             if (recorder.state === "recording") {
               recorder.stop();
             }
-          }, 100);
+          }, 150);
         }
       }
 
@@ -1181,10 +1207,9 @@
 
     // Export Static PNG Cover Image
     exportImageBtn.addEventListener("click", async () => {
-      const canvas = document.getElementById("exportCanvas");
-      canvas.width = 1080;
-      canvas.height = 1920;
-      const ctx = canvas.getContext("2d");
+      exportCanvas.width = 1080;
+      exportCanvas.height = 1920;
+      const ctx = exportCanvas.getContext("2d");
       const imgObjA = await loadImage(state.imageA);
       const imgObjB = await loadImage(state.imageB);
 
@@ -1192,7 +1217,7 @@
 
       const link = document.createElement("a");
       link.download = `WhichOneIsReal_Cover_${Date.now()}.png`;
-      link.href = canvas.toDataURL("image/png");
+      link.href = exportCanvas.toDataURL("image/png");
       link.click();
     });
   </script>
