@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -5,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Which One Is Real? - Video & Quiz Maker</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   
   <!-- Google Fonts -->
@@ -94,8 +94,7 @@
       transform: scale(1.04);
     }
     .quiz-card.selected-loser {
-      filter: grayscale(80%) brightness(0.6);
-      opacity: 0.7;
+      opacity: 0.55;
     }
 
     .speed-mark {
@@ -104,7 +103,6 @@
       stroke-linecap: round;
     }
 
-    /* Modal fade animation */
     .modal-active {
       opacity: 1 !important;
       pointer-events: auto !important;
@@ -123,7 +121,7 @@
     <div class="flex items-center gap-1.5 flex-wrap">
       <button id="toggleControlsBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1.5 rounded-lg font-semibold flex items-center gap-1 transition">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
-        <span>Düzenle</span>
+        <span>Ayarlar</span>
       </button>
 
       <button id="playQuizBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow-md shadow-emerald-900/50 transition">
@@ -138,10 +136,17 @@
     </div>
   </header>
 
+  <!-- Controls Panel -->
   <section id="controlsPanel" class="w-full max-w-xl bg-slate-800/95 border border-slate-700 p-4 rounded-2xl mb-4 shadow-2xl transition-all">
     <h3 class="text-sm font-bold text-yellow-400 uppercase tracking-wider mb-3 flex items-center justify-between">
       <span>Fotoğraf & Soru Ayarları</span>
-      <span class="text-[11px] text-slate-400 normal-case">İster yükleyin, ister URL girin</span>
+      <div class="flex items-center gap-2">
+        <label class="text-[11px] text-slate-300 font-normal">Video Kalitesi:</label>
+        <select id="videoQualitySelect" class="bg-slate-900 text-yellow-400 border border-slate-700 text-xs rounded px-2 py-0.5 font-semibold focus:outline-none">
+          <option value="720" selected>⚡ 720p (Akıcı & Mobil Hızlı)</option>
+          <option value="1080">💎 1080p (Full HD)</option>
+        </select>
+      </div>
     </h3>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
@@ -202,13 +207,13 @@
     </div>
   </section>
 
-  <main id="shortsContainer" class="relative w-full max-w-[420px] aspect-[9/16] bg-black rounded-[36px] overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.9)] border-[5px] border-slate-800 flex flex-col justify-between p-4 sm:p-5 select-none">
+  <!-- Live Canvas UI Preview Container -->
+  <main id="shortsContainer" class="relative w-full max-w-[400px] aspect-[9/16] bg-black rounded-[36px] overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.9)] border-[5px] border-slate-800 flex flex-col justify-between p-4 sm:p-5 select-none">
     
     <!-- Background subtle lights/vignette -->
     <div class="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(circle_at_50%_45%,#1e3a8a_0%,transparent_70%)]"></div>
 
     <div class="relative z-10 flex flex-col items-center text-center mt-2">
-      
       <!-- Logo: Crown Monkey + Mr. Mokoko -->
       <div class="flex items-center justify-center gap-1.5 mb-1">
         <svg class="w-5 h-5 -rotate-12" viewBox="0 0 30 30"><line x1="25" y1="20" x2="5" y2="25" class="speed-mark" /><line x1="25" y1="15" x2="8" y2="10" class="speed-mark" /></svg>
@@ -296,6 +301,7 @@
       </div>
     </div>
 
+    <!-- Countdown & Answer Area -->
     <div class="relative z-10 flex flex-col items-center text-center mb-1">
       <div class="brush-yellow px-4 sm:px-6 py-1.5 border-2 border-black inline-flex items-center gap-2 shadow-lg mb-2">
         <svg class="w-6 h-6 sm:w-7 sm:h-7 text-black fill-current" viewBox="0 0 24 24"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"/><path d="M13 7h-2v6l4.5 2.7.75-1.23-3.25-1.97z"/><path d="M9 1h6v2H9z"/></svg>
@@ -349,60 +355,65 @@
     </button>
   </div>
 
+  <!-- Video Export Modal -->
   <div id="videoModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300 flex items-center justify-center p-3 sm:p-4">
-    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-md w-full p-4 sm:p-6 shadow-2xl flex flex-col items-center text-center">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-sm w-full p-4 sm:p-5 shadow-2xl flex flex-col items-center text-center">
       
-      <div class="flex items-center justify-between w-full mb-3">
-        <h3 class="text-lg font-bold text-white flex items-center gap-2">
-          <span>🎬</span> Hazır Video (Shorts / Reels)
+      <div class="flex items-center justify-between w-full mb-2">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <span>🎬</span> Shorts / Reels Videosu
         </h3>
         <button id="closeModalBtn" class="text-slate-400 hover:text-white p-1 rounded-lg">✕</button>
       </div>
 
       <!-- Video Player Preview -->
-      <div id="videoPreviewWrapper" class="w-48 aspect-[9/16] bg-black rounded-2xl overflow-hidden border-2 border-yellow-400 shadow-xl relative mb-4">
+      <div id="videoPreviewWrapper" class="w-44 aspect-[9/16] bg-black rounded-2xl overflow-hidden border-2 border-yellow-400 shadow-xl relative mb-3">
         <video id="renderedVideo" controls playsinline loop class="w-full h-full object-cover"></video>
         <div id="videoGeneratingOverlay" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center p-3 text-center">
           <div class="w-10 h-10 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin mb-3"></div>
-          <p class="text-yellow-400 font-bold text-xs uppercase tracking-wider" id="generationStatus">Video Hazırlanıyor...</p>
-          <div class="w-32 bg-slate-800 h-2 rounded-full overflow-hidden mt-2">
-            <div id="generationProgress" class="bg-yellow-400 h-full w-0 transition-all duration-200"></div>
+          <p class="text-yellow-400 font-bold text-xs uppercase tracking-wider" id="generationStatus">Ses ve Video Eşitleniyor...</p>
+          <div class="w-28 bg-slate-800 h-2 rounded-full overflow-hidden mt-2">
+            <div id="generationProgress" class="bg-yellow-400 h-full w-0 transition-all duration-100"></div>
           </div>
+          <span id="timeProgressLabel" class="text-[10px] text-slate-400 mt-1">0.0s / 6.0s</span>
         </div>
       </div>
 
       <!-- Action Buttons -->
       <div class="w-full flex flex-col gap-2">
-        <a id="downloadVideoLink" download="WhichOneIsReal_Shorts.mp4" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg transition transform active:scale-95 text-sm sm:text-base pointer-events-none opacity-50">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-          <span>Videoyu Galeriye / Cihaza İndir</span>
+        <button id="shareGalleryBtn" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg transition transform active:scale-95 text-xs sm:text-sm pointer-events-none opacity-50">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+          <span id="downloadBtnText">📲 Doğrudan Galeriye Kaydet</span>
+        </button>
+
+        <a id="downloadFallbackLink" download="Quiz_Video.mp4" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 transition pointer-events-none opacity-40">
+          <span>📁 Dosya Olarak İndir (Yedek)</span>
         </a>
 
         <!-- Mobile instructions -->
-        <div class="text-[11px] text-slate-400 bg-slate-800/80 p-2.5 rounded-xl border border-slate-700/60 text-left mt-1">
-          <p class="font-bold text-yellow-400 mb-1">📱 Galeriye Nasıl Kaydedilir?</p>
-          <p>• <b>iPhone / Safari:</b> Yukarıdaki yeşil butona tıklayın veya videoya basılı tutup <b>"Videoyu Kaydet"</b> seçeneğine dokunun. Doğrudan Fotoğraflar uygulamanıza gelir.</p>
-          <p class="mt-1">• <b>Android:</b> Butona tıkladığınızda video otomatik olarak İndirilenler ve Galeri'ye kaydedilir.</p>
+        <div class="text-[11px] text-slate-400 bg-slate-800/60 p-2 rounded-xl border border-slate-700/60 text-left mt-0.5">
+          <p class="font-bold text-yellow-400 mb-0.5">📱 Galeriye Nasıl Kaydedilir?</p>
+          <p>• <b>iPhone:</b> "Galeriye Kaydet" butonuna basınca açılan menüden <b>"Videoyu Kaydet"</b>i seçin.</p>
+          <p class="mt-0.5">• <b>Android:</b> Butona basınca doğrudan Galeri ve İndirilenler klasörüne iner.</p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Hidden Canvas for 1080x1920 HD Rendering -->
-  <canvas id="exportCanvas" width="1080" height="1920" class="hidden"></canvas>
+  <!-- Offscreen Active Canvas for Rendering (positioned offscreen to ensure WebKit stays active) -->
+  <div style="position: absolute; left: -9999px; top: -9999px; width: 10px; height: 10px; overflow: hidden; pointer-events: none;">
+    <canvas id="exportCanvas"></canvas>
+  </div>
 
+  <!-- Application Logic & Synchronized Engine -->
   <script>
-    // State
     const state = {
       imageA: "https://images.unsplash.com/photo-1540573133985-87b6da6d54a9?w=600&auto=format&fit=crop&q=80",
       imageB: "https://images.unsplash.com/photo-1574063413132-355dbfd83e25?w=600&auto=format&fit=crop&q=80",
-      imgElA: null,
-      imgElB: null,
       correctAnswer: "B",
       mainTitle: "WHICH ONE IS",
       highlightWord: "REAL?",
       isPlaying: false,
-      userChoice: null,
       timerInterval: null
     };
 
@@ -436,59 +447,81 @@
     const swapImagesBtn = document.getElementById("swapImagesBtn");
     const exportVideoBtn = document.getElementById("exportVideoBtn");
     const exportImageBtn = document.getElementById("exportImageBtn");
+    const videoQualitySelect = document.getElementById("videoQualitySelect");
 
     const videoModal = document.getElementById("videoModal");
     const closeModalBtn = document.getElementById("closeModalBtn");
     const renderedVideo = document.getElementById("renderedVideo");
-    const downloadVideoLink = document.getElementById("downloadVideoLink");
+    const shareGalleryBtn = document.getElementById("shareGalleryBtn");
+    const downloadFallbackLink = document.getElementById("downloadFallbackLink");
     const videoGeneratingOverlay = document.getElementById("videoGeneratingOverlay");
     const generationStatus = document.getElementById("generationStatus");
     const generationProgress = document.getElementById("generationProgress");
+    const timeProgressLabel = document.getElementById("timeProgressLabel");
 
-    // Audio synthesizer with Tone.js
-    let synth = null;
-    let audioDest = null;
+    let currentVideoBlob = null;
+    let currentVideoFile = null;
 
-    function initAudio() {
-      if (!synth && window.Tone) {
-        Tone.start();
-        audioDest = Tone.getContext().createMediaStreamDestination();
-        synth = new Tone.PolySynth(Tone.Synth, {
-          oscillator: { type: "triangle" },
-          envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.3 }
-        });
-        synth.connect(audioDest);
-        synth.toDestination();
+    // --- High Accuracy Native Web Audio Engine (Zero Drift) ---
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass();
       }
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
+      return audioCtx;
     }
 
-    function playTickSound() {
+    // Schedule exact sample-accurate tone at precise time `t`
+    function scheduleTone(ctx, destNode, startTime, freq, duration, type = "triangle", gainLevel = 0.35) {
       try {
-        initAudio();
-        if (synth) synth.triggerAttackRelease("A5", "16n");
-      } catch (e) {
-        console.warn("Audio unavailable", e);
-      }
-    }
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, startTime);
 
-    function playWinSound() {
-      try {
-        initAudio();
-        if (synth) {
-          const now = Tone.now();
-          synth.triggerAttackRelease(["C5", "E5", "G5", "C6"], "8n", now);
+        gain.gain.setValueAtTime(gainLevel, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+        osc.connect(gain);
+        gain.connect(destNode);
+        if (destNode !== ctx.destination) {
+          gain.connect(ctx.destination); // Also audible to user
         }
-      } catch (e) {
-        console.warn("Audio error", e);
+
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+      } catch (err) {
+        console.warn("Audio schedule error:", err);
       }
     }
 
-    // Toggle controls visibility
-    toggleControlsBtn.addEventListener("click", () => {
-      controlsPanel.classList.toggle("hidden");
-    });
+    // Interactive Preview Live Sound triggers
+    function playLiveTick() {
+      const ctx = getAudioContext();
+      scheduleTone(ctx, ctx.destination, ctx.currentTime, 880, 0.12, "sine", 0.4);
+    }
 
-    // Image Upload Handlers
+    function playLiveWin() {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+      [
+        { f: 523.25, d: 0.15, o: 0 },
+        { f: 659.25, d: 0.15, o: 0.1 },
+        { f: 783.99, d: 0.20, o: 0.2 },
+        { f: 1046.50, d: 0.50, o: 0.32 }
+      ].forEach(chord => {
+        scheduleTone(ctx, ctx.destination, now + chord.o, chord.f, chord.d, "triangle", 0.3);
+      });
+    }
+
+    // Input handlers
+    toggleControlsBtn.addEventListener("click", () => controlsPanel.classList.toggle("hidden"));
+
     function handleFileUpload(input, targetImg, stateKey) {
       if (input.files && input.files[0]) {
         const reader = new FileReader();
@@ -517,11 +550,9 @@
       }
     });
 
-    // Fallbacks
-    imgA.onerror = () => { imgA.src = "https://placehold.co/600x750/1e293b/f8fafc?text=Fotoğraf+A"; };
-    imgB.onerror = () => { imgB.src = "https://placehold.co/600x750/1e293b/f8fafc?text=Fotoğraf+B"; };
+    imgA.onerror = () => { imgA.src = "https://placehold.co/600x750/1e293b/f8fafc?text=Foto%C4%9Fraf+A"; };
+    imgB.onerror = () => { imgB.src = "https://placehold.co/600x750/1e293b/f8fafc?text=Foto%C4%9Fraf+B"; };
 
-    // Titles
     mainTitleInput.addEventListener("input", (e) => {
       state.mainTitle = e.target.value;
       displayMainTitle.textContent = e.target.value.toUpperCase() || "WHICH ONE IS";
@@ -538,7 +569,6 @@
       });
     });
 
-    // Swap images
     swapImagesBtn.addEventListener("click", () => {
       const tempSrc = imgA.src;
       imgA.src = imgB.src;
@@ -575,11 +605,10 @@
       });
     });
 
-    // Reset Quiz
+    // Reset Quiz Preview
     function resetQuiz() {
       clearInterval(state.timerInterval);
       state.isPlaying = false;
-      state.userChoice = null;
 
       [count3, count2, count1].forEach(c => {
         c.className = "w-10 h-10 sm:w-11 sm:h-11 rounded-full border-[3px] border-yellow-400 flex items-center justify-center font-heavy text-xl sm:text-2xl text-white transition-all duration-300";
@@ -602,20 +631,21 @@
     function startQuizCountdown() {
       resetQuiz();
       state.isPlaying = true;
+      getAudioContext();
 
       let second = 3;
-      playTickSound();
+      playLiveTick();
       count3.classList.add("pop-active");
 
       state.timerInterval = setInterval(() => {
         second--;
 
         if (second === 2) {
-          playTickSound();
+          playLiveTick();
           count3.classList.remove("pop-active");
           count2.classList.add("pop-active");
         } else if (second === 1) {
-          playTickSound();
+          playLiveTick();
           count2.classList.remove("pop-active");
           count1.classList.add("pop-active");
         } else if (second <= 0) {
@@ -630,7 +660,7 @@
     function revealAnswer() {
       state.isPlaying = false;
       const winner = state.correctAnswer;
-      playWinSound();
+      playLiveWin();
 
       if (window.confetti) {
         confetti({
@@ -656,7 +686,7 @@
       }
     }
 
-    // Load image as HTMLImageElement with promise
+    // Helper Image Loader
     function loadImage(src) {
       return new Promise((resolve) => {
         const img = new Image();
@@ -671,7 +701,7 @@
       });
     }
 
-    // Helper: Rounded Rectangle
+    // Helper: Scaled Rounded Rectangle
     function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
       ctx.beginPath();
       ctx.moveTo(x + radius, y);
@@ -688,13 +718,12 @@
       if (stroke) ctx.stroke();
     }
 
-    // Draw Complete 1080x1920 Frame
-    function drawVideoFrame(ctx, currentPhase, imgObjA, imgObjB) {
-      const W = 1080;
-      const H = 1920;
+    // --- High-Performance Canvas Renderer (Scalable 720p / 1080p) ---
+    function drawVideoFrame(ctx, currentPhase, imgObjA, imgObjB, W, H) {
+      const s = W / 1080; // Scale factor relative to 1080 design
 
       // 1. Dark Gradient Background
-      const bgGrad = ctx.createRadialGradient(W / 2, H * 0.35, 50, W / 2, H * 0.45, 900);
+      const bgGrad = ctx.createRadialGradient(W / 2, H * 0.35, 50 * s, W / 2, H * 0.45, 900 * s);
       bgGrad.addColorStop(0, "#1e3a8a");
       bgGrad.addColorStop(0.5, "#0b1329");
       bgGrad.addColorStop(1, "#030712");
@@ -708,121 +737,118 @@
       
       // Speed lines near logo
       ctx.strokeStyle = "#facc15";
-      ctx.lineWidth = 8;
+      ctx.lineWidth = 7 * s;
       ctx.lineCap = "round";
-      // Left lines
-      ctx.beginPath(); ctx.moveTo(330, 110); ctx.lineTo(290, 125); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(340, 95); ctx.lineTo(300, 85); ctx.stroke();
-      // Right lines
-      ctx.beginPath(); ctx.moveTo(750, 110); ctx.lineTo(790, 125); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(740, 95); ctx.lineTo(780, 85); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(330 * s, 110 * s); ctx.lineTo(290 * s, 125 * s); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(340 * s, 95 * s); ctx.lineTo(300 * s, 85 * s); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(750 * s, 110 * s); ctx.lineTo(790 * s, 125 * s); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(740 * s, 95 * s); ctx.lineTo(780 * s, 85 * s); ctx.stroke();
 
       // Pill container
-      ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
-      roundRect(ctx, 360, 75, 360, 60, 30, true, false);
+      ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
+      roundRect(ctx, 360 * s, 75 * s, 360 * s, 60 * s, 30 * s, true, false);
 
-      ctx.font = "32px serif";
-      ctx.fillText("👑🐵", 420, 105);
+      ctx.font = `${Math.round(30 * s)}px serif`;
+      ctx.fillText("👑🐵", 420 * s, 105 * s);
 
       ctx.fillStyle = "#ffffff";
-      ctx.font = "900 32px 'Permanent Marker', cursive";
-      ctx.fillText("MR. MOKOKO", 570, 106);
+      ctx.font = `900 ${Math.round(30 * s)}px 'Permanent Marker', cursive`;
+      ctx.fillText("MR. MOKOKO", 570 * s, 106 * s);
       ctx.restore();
 
       // 3. Main Title: "WHICH ONE IS"
       ctx.save();
       ctx.textAlign = "center";
-      ctx.font = "900 84px 'Lilita One', 'Montserrat', sans-serif";
-      ctx.lineWidth = 14;
+      ctx.font = `900 ${Math.round(84 * s)}px 'Lilita One', 'Montserrat', sans-serif`;
+      ctx.lineWidth = 14 * s;
       ctx.strokeStyle = "#000000";
       ctx.fillStyle = "#ffffff";
-      ctx.strokeText(state.mainTitle.toUpperCase(), W / 2, 230);
-      ctx.fillText(state.mainTitle.toUpperCase(), W / 2, 230);
+      ctx.strokeText(state.mainTitle.toUpperCase(), W / 2, 230 * s);
+      ctx.fillText(state.mainTitle.toUpperCase(), W / 2, 230 * s);
 
       // 4. "REAL?" with Yellow 3D Pop
-      ctx.font = "900 160px 'Bangers', cursive";
-      ctx.lineWidth = 22;
+      ctx.font = `900 ${Math.round(156 * s)}px 'Bangers', cursive`;
+      ctx.lineWidth = 20 * s;
       ctx.strokeStyle = "#000000";
       ctx.fillStyle = "#facc15";
       ctx.shadowColor = "rgba(0,0,0,0.9)";
-      ctx.shadowOffsetY = 16;
-      ctx.shadowBlur = 10;
-      ctx.strokeText(state.highlightWord.toUpperCase(), W / 2, 385);
-      ctx.fillText(state.highlightWord.toUpperCase(), W / 2, 385);
+      ctx.shadowOffsetY = 14 * s;
+      ctx.shadowBlur = 8 * s;
+      ctx.strokeText(state.highlightWord.toUpperCase(), W / 2, 385 * s);
+      ctx.fillText(state.highlightWord.toUpperCase(), W / 2, 385 * s);
       ctx.restore();
 
       // 5. Yellow Skewed Ribbon: "A or B?"
       ctx.save();
-      ctx.translate(W / 2, 470);
+      ctx.translate(W / 2, 470 * s);
       ctx.rotate(-0.03);
       ctx.fillStyle = "#facc15";
       ctx.strokeStyle = "#000000";
-      ctx.lineWidth = 6;
-      roundRect(ctx, -140, -32, 280, 64, 8, true, true);
+      ctx.lineWidth = 6 * s;
+      roundRect(ctx, -140 * s, -32 * s, 280 * s, 64 * s, 8 * s, true, true);
 
       ctx.fillStyle = "#000000";
-      ctx.font = "900 48px 'Bangers', cursive";
+      ctx.font = `900 ${Math.round(48 * s)}px 'Bangers', cursive`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText("A or B?", 0, 2);
+      ctx.fillText("A or B?", 0, 2 * s);
       ctx.restore();
 
       // 6. Letter Badges Row: "A" and "B"
-      const badgeY = 560;
+      const badgeY = 560 * s;
       // Badge A
       ctx.save();
       ctx.fillStyle = "#ffffff";
       ctx.strokeStyle = "#94a3b8";
-      ctx.lineWidth = 5;
-      roundRect(ctx, 210, badgeY, 140, 110, 24, true, true);
+      ctx.lineWidth = 5 * s;
+      roundRect(ctx, 210 * s, badgeY, 140 * s, 110 * s, 24 * s, true, true);
       ctx.fillStyle = "#ef4444";
-      ctx.font = "900 80px 'Lilita One', sans-serif";
+      ctx.font = `900 ${Math.round(76 * s)}px 'Lilita One', sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText("A", 280, badgeY + 58);
+      ctx.fillText("A", 280 * s, badgeY + 58 * s);
       ctx.restore();
 
       // Badge B
       ctx.save();
       ctx.fillStyle = "#ffffff";
       ctx.strokeStyle = "#94a3b8";
-      ctx.lineWidth = 5;
-      roundRect(ctx, 730, badgeY, 140, 110, 24, true, true);
+      ctx.lineWidth = 5 * s;
+      roundRect(ctx, 730 * s, badgeY, 140 * s, 110 * s, 24 * s, true, true);
       ctx.fillStyle = "#ef4444";
-      ctx.font = "900 80px 'Lilita One', sans-serif";
+      ctx.font = `900 ${Math.round(76 * s)}px 'Lilita One', sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText("B", 800, badgeY + 58);
+      ctx.fillText("B", 800 * s, badgeY + 58 * s);
       ctx.restore();
 
       // 7. Photos Container
-      const cardW = 460;
-      const cardH = 575;
-      const cardY = 700;
-      const cardAX = 60;
-      const cardBX = 560;
+      const cardW = 460 * s;
+      const cardH = 575 * s;
+      const cardY = 700 * s;
+      const cardAX = 60 * s;
+      const cardBX = 560 * s;
+
+      const isWinnerA = currentPhase === "reveal" && state.correctAnswer === "A";
+      const isLoserA = currentPhase === "reveal" && state.correctAnswer === "B";
+      const isWinnerB = currentPhase === "reveal" && state.correctAnswer === "B";
+      const isLoserB = currentPhase === "reveal" && state.correctAnswer === "A";
 
       // Draw Photo A
       ctx.save();
-      const isWinnerA = currentPhase === "reveal" && state.correctAnswer === "A";
-      const isLoserA = currentPhase === "reveal" && state.correctAnswer === "B";
-
-      if (isWinnerA) {
-        ctx.strokeStyle = "#22c55e";
-        ctx.lineWidth = 14;
-      } else {
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 8;
-      }
-      roundRect(ctx, cardAX, cardY, cardW, cardH, 32, false, true);
+      ctx.strokeStyle = isWinnerA ? "#22c55e" : "#ffffff";
+      ctx.lineWidth = (isWinnerA ? 14 : 8) * s;
+      roundRect(ctx, cardAX, cardY, cardW, cardH, 30 * s, false, true);
       ctx.clip();
 
       if (imgObjA) {
-        if (isLoserA) ctx.filter = "grayscale(70%) brightness(0.6)";
         ctx.drawImage(imgObjA, cardAX, cardY, cardW, cardH);
-        ctx.filter = "none";
       }
-
+      if (isLoserA) {
+        // Fast GPU friendly dimming without slow ctx.filter
+        ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
+        ctx.fillRect(cardAX, cardY, cardW, cardH);
+      }
       if (isWinnerA) {
         ctx.fillStyle = "rgba(34, 197, 94, 0.25)";
         ctx.fillRect(cardAX, cardY, cardW, cardH);
@@ -831,25 +857,18 @@
 
       // Draw Photo B
       ctx.save();
-      const isWinnerB = currentPhase === "reveal" && state.correctAnswer === "B";
-      const isLoserB = currentPhase === "reveal" && state.correctAnswer === "A";
-
-      if (isWinnerB) {
-        ctx.strokeStyle = "#22c55e";
-        ctx.lineWidth = 14;
-      } else {
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 8;
-      }
-      roundRect(ctx, cardBX, cardY, cardW, cardH, 32, false, true);
+      ctx.strokeStyle = isWinnerB ? "#22c55e" : "#ffffff";
+      ctx.lineWidth = (isWinnerB ? 14 : 8) * s;
+      roundRect(ctx, cardBX, cardY, cardW, cardH, 30 * s, false, true);
       ctx.clip();
 
       if (imgObjB) {
-        if (isLoserB) ctx.filter = "grayscale(70%) brightness(0.6)";
         ctx.drawImage(imgObjB, cardBX, cardY, cardW, cardH);
-        ctx.filter = "none";
       }
-
+      if (isLoserB) {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
+        ctx.fillRect(cardBX, cardY, cardW, cardH);
+      }
       if (isWinnerB) {
         ctx.fillStyle = "rgba(34, 197, 94, 0.25)";
         ctx.fillRect(cardBX, cardY, cardW, cardH);
@@ -860,52 +879,52 @@
       ctx.save();
       ctx.translate(W / 2, cardY + cardH / 2);
       ctx.rotate(-0.1);
-      // Pink lines
+      // Pink speed lines
       ctx.fillStyle = "#ec4899";
-      ctx.fillRect(-75, -60, 36, 10);
-      ctx.fillRect(40, 50, 36, 10);
+      ctx.fillRect(-70 * s, -55 * s, 34 * s, 9 * s);
+      ctx.fillRect(36 * s, 46 * s, 34 * s, 9 * s);
 
       // Cyan box
-      const vsGrad = ctx.createLinearGradient(0, -45, 0, 45);
+      const vsGrad = ctx.createLinearGradient(0, -45 * s, 0, 45 * s);
       vsGrad.addColorStop(0, "#67e8f9");
       vsGrad.addColorStop(1, "#06b6d4");
       ctx.fillStyle = vsGrad;
       ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 7;
-      roundRect(ctx, -55, -45, 110, 90, 20, true, true);
+      ctx.lineWidth = 7 * s;
+      roundRect(ctx, -55 * s, -45 * s, 110 * s, 90 * s, 20 * s, true, true);
 
       ctx.fillStyle = "#ffffff";
-      ctx.font = "900 60px 'Bangers', cursive";
+      ctx.font = `900 ${Math.round(58 * s)}px 'Bangers', cursive`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.shadowColor = "#0891b2";
-      ctx.shadowOffsetY = 4;
-      ctx.fillText("VS", 0, 4);
+      ctx.shadowOffsetY = 4 * s;
+      ctx.fillText("VS", 0, 4 * s);
       ctx.restore();
 
       // 9. Yellow Banner: "YOU HAVE 3 SECONDS!"
-      const timerY = 1360;
+      const timerY = 1360 * s;
       ctx.save();
       ctx.translate(W / 2, timerY);
       ctx.fillStyle = "#facc15";
       ctx.strokeStyle = "#000000";
-      ctx.lineWidth = 6;
-      roundRect(ctx, -270, -38, 540, 76, 12, true, true);
+      ctx.lineWidth = 6 * s;
+      roundRect(ctx, -270 * s, -38 * s, 540 * s, 76 * s, 12 * s, true, true);
 
       ctx.fillStyle = "#000000";
-      ctx.font = "900 48px 'Bangers', cursive";
+      ctx.font = `900 ${Math.round(46 * s)}px 'Bangers', cursive`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText("⏱ YOU HAVE 3 SECONDS!", 0, 2);
+      ctx.fillText("⏱ YOU HAVE 3 SECONDS!", 0, 2 * s);
       ctx.restore();
 
       // 10. Countdown Circles (3 > 2 > 1)
-      const circlesY = 1485;
-      const radius = 48;
+      const circlesY = 1485 * s;
+      const radius = 46 * s;
       const countData = [
-        { label: "3", x: 390, active: currentPhase === "3" },
-        { label: "2", x: 540, active: currentPhase === "2" },
-        { label: "1", x: 690, active: currentPhase === "1" }
+        { label: "3", x: 390 * s, active: currentPhase === "3" },
+        { label: "2", x: 540 * s, active: currentPhase === "2" },
+        { label: "1", x: 690 * s, active: currentPhase === "1" }
       ];
 
       countData.forEach(item => {
@@ -916,102 +935,108 @@
         if (item.active) {
           ctx.fillStyle = "#facc15";
           ctx.strokeStyle = "#ffffff";
-          ctx.lineWidth = 8;
+          ctx.lineWidth = 8 * s;
           ctx.shadowColor = "#facc15";
-          ctx.shadowBlur = 24;
+          ctx.shadowBlur = 20 * s;
           ctx.fill();
           ctx.stroke();
-
           ctx.fillStyle = "#000000";
         } else {
           ctx.fillStyle = "rgba(0,0,0,0.5)";
           ctx.strokeStyle = "#facc15";
-          ctx.lineWidth = 6;
+          ctx.lineWidth = 6 * s;
           ctx.fill();
           ctx.stroke();
-
           ctx.fillStyle = "#ffffff";
         }
 
-        ctx.font = "900 52px 'Lilita One', sans-serif";
+        ctx.font = `900 ${Math.round(50 * s)}px 'Lilita One', sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(item.label, item.x, circlesY + 2);
+        ctx.fillText(item.label, item.x, circlesY + 2 * s);
         ctx.restore();
       });
 
       // Chevrons between circles
       ctx.save();
       ctx.fillStyle = "#facc15";
-      ctx.font = "900 44px sans-serif";
+      ctx.font = `900 ${Math.round(42 * s)}px sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(">", 465, circlesY);
-      ctx.fillText(">", 615, circlesY);
+      ctx.fillText(">", 465 * s, circlesY);
+      ctx.fillText(">", 615 * s, circlesY);
       ctx.restore();
 
       // 11. Answer Banner
-      const answerY = 1620;
+      const answerY = 1620 * s;
       ctx.save();
       ctx.translate(W / 2, answerY);
       ctx.fillStyle = "#ffffff";
       ctx.strokeStyle = "#000000";
-      ctx.lineWidth = 6;
-      roundRect(ctx, -260, -38, 520, 76, 12, true, true);
+      ctx.lineWidth = 6 * s;
+      roundRect(ctx, -260 * s, -38 * s, 520 * s, 76 * s, 12 * s, true, true);
 
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
 
       if (currentPhase === "reveal") {
         ctx.fillStyle = "#15803d";
-        ctx.font = "900 50px 'Bangers', cursive";
-        ctx.fillText(`THE ANSWER IS ${state.correctAnswer}! 🎉`, 0, 2);
+        ctx.font = `900 ${Math.round(48 * s)}px 'Bangers', cursive`;
+        ctx.fillText(`THE ANSWER IS ${state.correctAnswer}! 🎉`, 0, 2 * s);
       } else {
         ctx.fillStyle = "#000000";
-        ctx.font = "900 46px 'Bangers', cursive";
-        ctx.fillText("THE ANSWER IS...", 0, 2);
+        ctx.font = `900 ${Math.round(44 * s)}px 'Bangers', cursive`;
+        ctx.fillText("THE ANSWER IS...", 0, 2 * s);
       }
       ctx.restore();
 
       // 12. Footer CTA: "DID YOU GET IT RIGHT? — A OR B? —"
       ctx.save();
       ctx.textAlign = "center";
-      ctx.font = "900 32px 'Montserrat', sans-serif";
+      ctx.font = `900 ${Math.round(30 * s)}px 'Montserrat', sans-serif`;
       ctx.fillStyle = "#facc15";
-      ctx.fillText("💬 DID YOU GET IT RIGHT?  — A OR B? —", W / 2, 1750);
+      ctx.fillText("💬 DID YOU GET IT RIGHT?  — A OR B? —", W / 2, 1750 * s);
       ctx.restore();
     }
 
+    // --- Rock-Solid Frame-Locked Video Recording Engine ---
     async function startVideoExport() {
-      initAudio();
+      const actx = getAudioContext();
 
       videoModal.classList.add("modal-active");
       videoGeneratingOverlay.classList.remove("hidden");
-      downloadVideoLink.classList.add("pointer-events-none", "opacity-50");
+      shareGalleryBtn.classList.add("pointer-events-none", "opacity-50");
+      downloadFallbackLink.classList.add("pointer-events-none", "opacity-40");
       generationProgress.style.width = "0%";
-      generationStatus.textContent = "Fotoğraflar Hazırlanıyor...";
+      generationStatus.textContent = "Fotoğraflar Yükleniyor...";
+      timeProgressLabel.textContent = "0.0s / 6.0s";
+
+      const quality = parseInt(videoQualitySelect.value, 10) || 720;
+      const W = quality;
+      const H = Math.round((quality * 16) / 9);
 
       const canvas = document.getElementById("exportCanvas");
-      const ctx = canvas.getContext("2d");
+      canvas.width = W;
+      canvas.height = H;
+      const ctx = canvas.getContext("2d", { alpha: false });
 
       // Preload images
       const imgObjA = await loadImage(state.imageA);
       const imgObjB = await loadImage(state.imageB);
 
-      generationStatus.textContent = "Video Kaydediliyor...";
+      generationStatus.textContent = "Ses ve Video Senkronize Ediliyor...";
 
-      // Setup Streams (Canvas 30FPS + Web Audio)
+      // Setup Web Audio MediaStreamDestination
+      const audioDest = actx.createMediaStreamDestination();
       const videoStream = canvas.captureStream(30);
-      let combinedStream = videoStream;
 
-      if (audioDest && audioDest.stream && audioDest.stream.getAudioTracks().length > 0) {
-        combinedStream = new MediaStream([
-          ...videoStream.getVideoTracks(),
-          ...audioDest.stream.getAudioTracks()
-        ]);
-      }
+      const combinedTracks = [
+        ...videoStream.getVideoTracks(),
+        ...audioDest.stream.getAudioTracks()
+      ];
+      const combinedStream = new MediaStream(combinedTracks);
 
-      // Check mime types
+      // Select supported codec
       let mimeType = "video/webm;codecs=vp9";
       let extension = "webm";
       if (MediaRecorder.isTypeSupported("video/mp4;codecs=avc1")) {
@@ -1027,7 +1052,7 @@
 
       const recorder = new MediaRecorder(combinedStream, {
         mimeType: mimeType,
-        videoBitsPerSecond: 8000000
+        videoBitsPerSecond: quality === 1080 ? 7000000 : 4000000
       });
 
       const chunks = [];
@@ -1036,36 +1061,65 @@
       };
 
       recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: mimeType });
-        const videoUrl = URL.createObjectURL(blob);
+        currentVideoBlob = new Blob(chunks, { type: mimeType });
+        const videoUrl = URL.createObjectURL(currentVideoBlob);
         
         renderedVideo.src = videoUrl;
         renderedVideo.play();
 
-        downloadVideoLink.href = videoUrl;
-        downloadVideoLink.download = `WhichOneIsReal_Quiz_${Date.now()}.${extension}`;
-        downloadVideoLink.classList.remove("pointer-events-none", "opacity-50");
+        const fileName = `WhichOneIsReal_${Date.now()}.${extension}`;
+        currentVideoFile = new File([currentVideoBlob], fileName, { type: mimeType });
 
+        // Update download links
+        downloadFallbackLink.href = videoUrl;
+        downloadFallbackLink.download = fileName;
+        downloadFallbackLink.classList.remove("pointer-events-none", "opacity-40");
+
+        shareGalleryBtn.classList.remove("pointer-events-none", "opacity-50");
         videoGeneratingOverlay.classList.add("hidden");
       };
 
-      recorder.start();
-
-      // Timeline Sequence:
-      // 0.0s - 1.2s: Intro (all circles off)
-      // 1.2s - 2.2s: Count 3
-      // 2.2s - 3.2s: Count 2
-      // 3.2s - 4.2s: Count 1
-      // 4.2s - 6.0s: Reveal Answer + tada sound!
+      // Exact Schedule:
+      // Total Duration: 6.00s
+      // t0 + 0.00s : Intro
+      // t0 + 1.20s : Circle 3 + Tick 1
+      // t0 + 2.20s : Circle 2 + Tick 2
+      // t0 + 3.20s : Circle 1 + Tick 3
+      // t0 + 4.20s : Reveal Answer + Tada Win Chords
+      // t0 + 6.00s : Finish
       const totalDuration = 6.0;
-      let startTime = null;
+      const t0 = actx.currentTime + 0.15; // 150ms buffer to start cleanly
 
-      function renderFrame(timestamp) {
-        if (!startTime) startTime = timestamp;
-        const elapsed = (timestamp - startTime) / 1000;
+      // Schedule Audio precisely to the audio clock
+      scheduleTone(actx, audioDest, t0 + 1.2, 880, 0.12, "sine", 0.45);
+      scheduleTone(actx, audioDest, t0 + 2.2, 880, 0.12, "sine", 0.45);
+      scheduleTone(actx, audioDest, t0 + 3.2, 880, 0.12, "sine", 0.45);
+
+      // Fanfare chords
+      [
+        { f: 523.25, d: 0.15, o: 0 },
+        { f: 659.25, d: 0.15, o: 0.1 },
+        { f: 783.99, d: 0.20, o: 0.2 },
+        { f: 1046.50, d: 0.60, o: 0.32 }
+      ].forEach(chord => {
+        scheduleTone(actx, audioDest, t0 + 4.2 + chord.o, chord.f, chord.d, "triangle", 0.35);
+      });
+
+      // Start recording
+      recorder.start(100);
+
+      // Render loop locked 1:1 to audio clock
+      let animationFrameId = null;
+
+      function renderFrame() {
+        const audioNow = actx.currentTime;
+        const elapsed = Math.max(0, audioNow - t0);
         const progress = Math.min(100, Math.round((elapsed / totalDuration) * 100));
-        generationProgress.style.width = `${progress}%`;
 
+        generationProgress.style.width = `${progress}%`;
+        timeProgressLabel.textContent = `${elapsed.toFixed(1)}s / ${totalDuration.toFixed(1)}s`;
+
+        // Exact Phase locked to audio clock timestamps
         let currentPhase = "intro";
         if (elapsed >= 1.2 && elapsed < 2.2) {
           currentPhase = "3";
@@ -1077,40 +1131,64 @@
           currentPhase = "reveal";
         }
 
-        drawVideoFrame(ctx, currentPhase, imgObjA, imgObjB);
+        drawVideoFrame(ctx, currentPhase, imgObjA, imgObjB, W, H);
 
         if (elapsed < totalDuration) {
-          requestAnimationFrame(renderFrame);
+          animationFrameId = requestAnimationFrame(renderFrame);
         } else {
-          recorder.stop();
+          cancelAnimationFrame(animationFrameId);
+          setTimeout(() => {
+            if (recorder.state === "recording") {
+              recorder.stop();
+            }
+          }, 100);
         }
       }
 
-      // Trigger audio synchronized with video
-      setTimeout(() => playTickSound(), 1200);
-      setTimeout(() => playTickSound(), 2200);
-      setTimeout(() => playTickSound(), 3200);
-      setTimeout(() => playWinSound(), 4200);
-
-      requestAnimationFrame(renderFrame);
+      animationFrameId = requestAnimationFrame(renderFrame);
     }
 
     exportVideoBtn.addEventListener("click", startVideoExport);
 
-    // Modal Close
+    // Save Directly to Gallery (Web Share API for iOS / Android)
+    shareGalleryBtn.addEventListener("click", async () => {
+      if (!currentVideoBlob) return;
+
+      // On iOS / Android devices, Web Share API allows direct "Save Video" to camera roll / gallery
+      if (navigator.canShare && currentVideoFile && navigator.canShare({ files: [currentVideoFile] })) {
+        try {
+          await navigator.share({
+            files: [currentVideoFile],
+            title: "Which One Is Real?",
+            text: "Which One Is Real Quiz Video"
+          });
+          return;
+        } catch (err) {
+          if (err.name !== "AbortError") {
+            console.warn("Share cancelled or failed, falling back to download", err);
+          }
+        }
+      }
+
+      // Fallback: Automatic trigger download
+      downloadFallbackLink.click();
+    });
+
     closeModalBtn.addEventListener("click", () => {
       videoModal.classList.remove("modal-active");
       renderedVideo.pause();
     });
 
-    // Export Static PNG
+    // Export Static PNG Cover Image
     exportImageBtn.addEventListener("click", async () => {
       const canvas = document.getElementById("exportCanvas");
+      canvas.width = 1080;
+      canvas.height = 1920;
       const ctx = canvas.getContext("2d");
       const imgObjA = await loadImage(state.imageA);
       const imgObjB = await loadImage(state.imageB);
 
-      drawVideoFrame(ctx, "intro", imgObjA, imgObjB);
+      drawVideoFrame(ctx, "intro", imgObjA, imgObjB, 1080, 1920);
 
       const link = document.createElement("a");
       link.download = `WhichOneIsReal_Cover_${Date.now()}.png`;
@@ -1120,3 +1198,4 @@
   </script>
 </body>
 </html>
+```
